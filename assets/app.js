@@ -325,12 +325,12 @@
     var typeLabel = TYPE_CODES[inv.typeCode] || (inv.docType === "CreditNote" ? "Gutschrift" : "Rechnung");
 
     var linesHTML = inv.lines.map(function (l, i) {
-      return '<tr><td class="num">' + esc(l.id || (i + 1)) + '</td>' +
-        '<td>' + esc(l.name || "—") + (l.desc ? '<br><span class="muted small">' + esc(l.desc) + '</span>' : '') + '</td>' +
-        '<td class="num">' + fmtQty(l.qty) + (l.unit ? ' <span class="muted">' + esc(l.unit) + '</span>' : '') + '</td>' +
-        '<td class="num">' + (num(l.price) != null ? fmtMoney(l.price, cur) : "—") + '</td>' +
-        '<td class="num">' + (l.taxpct ? esc(l.taxpct) + " %" : "—") + '</td>' +
-        '<td class="num">' + (num(l.net) != null ? fmtMoney(l.net, cur) : "—") + '</td></tr>';
+      return '<tr><td class="num pos" data-label="Pos.">' + esc(l.id || (i + 1)) + '</td>' +
+        '<td class="desc" data-label="Bezeichnung">' + esc(l.name || "—") + (l.desc ? '<br><span class="muted small">' + esc(l.desc) + '</span>' : '') + '</td>' +
+        '<td class="num" data-label="Menge">' + fmtQty(l.qty) + (l.unit ? ' <span class="muted">' + esc(l.unit) + '</span>' : '') + '</td>' +
+        '<td class="num" data-label="Einzelpreis">' + (num(l.price) != null ? fmtMoney(l.price, cur) : "—") + '</td>' +
+        '<td class="num" data-label="USt">' + (l.taxpct ? esc(l.taxpct) + " %" : "—") + '</td>' +
+        '<td class="num" data-label="Netto">' + (num(l.net) != null ? fmtMoney(l.net, cur) : "—") + '</td></tr>';
     }).join("");
 
     var taxHTML = inv.taxRows.filter(function (r) { return num(r.base) != null || num(r.amount) != null; }).map(function (r) {

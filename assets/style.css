@@ -115,6 +115,27 @@ code{background:#eef2f7;padding:1px 6px;border-radius:5px;font-size:.9em}
 @media(max-width:640px){
   .hero h1{font-size:1.6rem}.parties{grid-template-columns:1fr}
   .inv-meta{text-align:left}.cta-inner{flex-direction:column;align-items:flex-start}
+
+  /* Header passt auf schmale Screens (kein horizontales Scrollen) */
+  .header-inner{height:auto;min-height:56px;padding:8px 0;flex-wrap:wrap;gap:2px 12px}
+  .logo{font-size:1rem}
+  .site-header nav{display:flex;gap:14px}
+  .site-header nav a{margin-left:0;font-size:.88rem}
+
+  /* Positions-Tabelle als gestapelte Karten (passt aufs Handy) */
+  table.lines{border-collapse:separate;border-spacing:0}
+  table.lines thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  table.lines tbody{display:block}
+  table.lines tr{display:block;border:1px solid var(--line);border-radius:12px;margin:0 0 12px;padding:6px 4px;background:#fbfcfe}
+  table.lines td{display:flex;justify-content:space-between;align-items:baseline;gap:14px;
+    border:none;border-bottom:1px solid var(--line);padding:9px 12px;text-align:right;white-space:normal}
+  table.lines td:last-child{border-bottom:none}
+  table.lines td::before{content:attr(data-label);color:var(--muted);font-size:.72rem;
+    font-weight:700;text-transform:uppercase;letter-spacing:.04em;text-align:left;flex:0 0 auto}
+  table.lines td.pos{background:#eef2f7;border-radius:8px;margin:2px 4px 6px;font-weight:700}
+  table.lines td.desc{font-weight:600;flex-direction:column;align-items:stretch;text-align:left;gap:2px}
+  table.lines td.desc::before{margin-bottom:2px}
+  table.lines td .muted.small{text-align:left}
 }
 @media print{
   .site-header,.site-footer,.cta,.content,.result-actions,.checks-card,.hero,#error{display:none!important}
