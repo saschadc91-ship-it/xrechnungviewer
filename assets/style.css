@@ -83,6 +83,18 @@ table.lines td.num,table.lines th.num{text-align:right;white-space:nowrap}
 .payinfo .kv{display:flex;gap:8px}.payinfo .kv b{min-width:120px;color:var(--muted);font-weight:500}
 .badge{display:inline-block;background:#eef2f7;color:var(--muted);border-radius:6px;padding:1px 7px;font-size:.75rem;margin-left:8px;vertical-align:middle}
 
+/* batch */
+.batch-scroll{overflow-x:auto}
+table.batch{width:100%;border-collapse:collapse;font-size:.9rem;margin-top:6px}
+table.batch th,table.batch td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+table.batch th{background:#f8fafc;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+table.batch td.num,table.batch th.num{text-align:right}
+table.batch td.st-ok{color:var(--ok);font-weight:700}
+table.batch td.st-bad{color:var(--bad);font-weight:700}
+table.batch td.st-warn{color:var(--warn);font-weight:700}
+table.batch tr.batch-err td{background:#fff8f0}
+table.batch td:nth-child(4){white-space:normal}
+
 /* buttons */
 .btn{display:inline-block;background:var(--brand);color:#fff;border:none;border-radius:10px;
   padding:11px 18px;font-weight:600;cursor:pointer;font-size:.95rem;transition:.15s}
@@ -136,6 +148,17 @@ code{background:#eef2f7;padding:1px 6px;border-radius:5px;font-size:.9em}
   table.lines td.desc{font-weight:600;flex-direction:column;align-items:stretch;text-align:left;gap:2px}
   table.lines td.desc::before{margin-bottom:2px}
   table.lines td .muted.small{text-align:left}
+
+  /* Batch-Tabelle als Karten */
+  table.batch thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+  table.batch,table.batch tbody{display:block}
+  table.batch tr{display:block;border:1px solid var(--line);border-radius:12px;margin:0 0 12px;padding:4px 4px;background:#fbfcfe}
+  table.batch td{display:flex;justify-content:space-between;gap:14px;border:none;border-bottom:1px solid var(--line);
+    padding:9px 12px;text-align:right;white-space:normal!important}
+  table.batch td:last-child{border-bottom:none;justify-content:flex-end}
+  table.batch td::before{content:attr(data-label);color:var(--muted);font-size:.72rem;font-weight:700;
+    text-transform:uppercase;letter-spacing:.04em;text-align:left;flex:0 0 auto}
+  table.batch td:last-child::before{content:""}
 }
 @media print{
   .site-header,.site-footer,.cta,.content,.result-actions,.checks-card,.hero,#error{display:none!important}

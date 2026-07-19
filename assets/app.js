@@ -11,7 +11,11 @@
       resultEl = $("#result"),
       checksEl = $("#checks"),
       invoiceEl = $("#invoice");
+  var batchEl = $("#batch"),
+      batchBodyEl = $("#batchBody"),
+      batchCountEl = $("#batchCount");
   var currentInvoice = null;
+  var currentBatch = [];
 
   /* ---------- XML-Helfer (namespace-agnostisch) ---------- */
   function kids(node, name) {
@@ -384,29 +388,31 @@
   }
   function clearError() { errorBox.classList.add("hidden"); }
 
-  function processXMLString(xmlStr) {
-    var parser = new DOMParser();
-    var dom = parser.parseFromString(xmlStr, "application/xml");
-    if (dom.querySelector("parsererror")) {
-      showError("Die Datei konnte nicht als XML gelesen werden. Ist es wirklich eine XRechnung-/ZUGFeRD-Datei?");
-      return;
-    }
-    var root = dom.documentElement;
-    var ln = root.localName;
-    var inv;
-    if (ln === "Invoice" || ln === "CreditNote") inv = parseUBL(root);
-    else if (ln === "CrossIndustryInvoice") inv = parseCII(root);
-    else {
-      // manche Dateien haben Wrapper – versuche zu finden
-      if (deep(root, "CrossIndustryInvoice")) inv = parseCII(deep(root, "CrossIndustryInvoice"));
-      else { showError("Unbekanntes Format. Erwartet: XRechnung (UBL/CII) oder ZUGFeRD. Gefundenes Wurzelelement: <" + ln + ">"); return; }
-    }
+  // Parsen ohne Rendern -> liefert inv oder { error }
+  function xmlToInvoice(xmlStr) {
+    var dom = new DOMParser().parseFromString(xmlStr, "application/xml");
+    if (dom.querySelector("parsererror")) return { error: "Keine gültige XML-Datei." };
+    var root = dom.documentElement, ln = root.localName;
+    if (ln === "Invoice" || ln === "CreditNote") return parseUBL(root);
+    if (ln === "CrossIndustryInvoice") return parseCII(root);
+    if (deep(root, "CrossIndustryInvoice")) return parseCII(deep(root, "CrossIndustryInvoice"));
+    return { error: "Unbekanntes Format (kein XRechnung/ZUGFeRD). Wurzel: <" + ln + ">" };
+  }
+
+  function showSingle(inv) {
     clearError();
+    batchEl.classList.add("hidden");
     currentInvoice = inv;
     renderChecks(validate(inv));
     renderInvoice(inv);
     resultEl.classList.remove("hidden");
     resultEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function processXMLString(xmlStr) {
+    var inv = xmlToInvoice(xmlStr);
+    if (inv.error) { showError(inv.error); return; }
+    showSingle(inv);
   }
 
   // ZUGFeRD: eingebettete XML aus PDF extrahieren (best effort, ohne externe Libs)
@@ -445,24 +451,49 @@
     return null;
   }
 
-  async function handleFile(file) {
-    clearError();
+  // Datei -> XML-String (oder null bei PDF ohne eingebettete E-Rechnung)
+  async function fileToXml(file) {
     var name = (file.name || "").toLowerCase();
     if (name.endsWith(".pdf") || file.type === "application/pdf") {
       var pdfBytes = new Uint8Array(await file.arrayBuffer());
-      var xml = await extractXMLfromPDF(pdfBytes);
-      if (xml) processXMLString(xml);
-      else showError("In diesem PDF wurde keine eingebettete E-Rechnung (ZUGFeRD/Factur-X) gefunden. Falls Sie eine separate XML-Datei haben, laden Sie diese direkt.");
-      return;
+      return await extractXMLfromPDF(pdfBytes);
     }
-    var txt = await file.text();
-    processXMLString(txt);
+    return await file.text();
+  }
+
+  // Mehrere Dateien: 1 = Detailansicht, >1 = Sammel-Tabelle (Batch)
+  async function handleFiles(fileList) {
+    clearError();
+    var files = Array.prototype.slice.call(fileList);
+    if (files.length === 1) return handleFile(files[0]);
+
+    var results = [];
+    for (var i = 0; i < files.length; i++) {
+      var f = files[i];
+      try {
+        var xml = await fileToXml(f);
+        if (!xml) { results.push({ name: f.name, error: "Keine E-Rechnung im PDF gefunden." }); continue; }
+        var inv = xmlToInvoice(xml);
+        if (inv.error) results.push({ name: f.name, error: inv.error });
+        else results.push({ name: f.name, inv: inv });
+      } catch (e) {
+        results.push({ name: f.name, error: "Datei konnte nicht gelesen werden." });
+      }
+    }
+    renderBatch(results);
+  }
+
+  async function handleFile(file) {
+    clearError();
+    var xml = await fileToXml(file);
+    if (xml == null) { showError("In diesem PDF wurde keine eingebettete E-Rechnung (ZUGFeRD/Factur-X) gefunden. Falls Sie eine separate XML-Datei haben, laden Sie diese direkt."); return; }
+    processXMLString(xml);
   }
 
   /* ---------- Events ---------- */
   dropzone.addEventListener("click", function () { fileInput.click(); });
   dropzone.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileInput.click(); } });
-  fileInput.addEventListener("change", function () { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
+  fileInput.addEventListener("change", function () { if (fileInput.files.length) handleFiles(fileInput.files); });
 
   ["dragenter", "dragover"].forEach(function (ev) {
     dropzone.addEventListener(ev, function (e) { e.preventDefault(); dropzone.classList.add("drag"); });
@@ -485,13 +516,21 @@
     var n = num(v);
     return n == null ? (v == null ? "" : v) : String(n).replace(".", ",");
   }
+  // Datum auf ISO (YYYY-MM-DD) normalisieren, damit Excel es als Datum erkennt
+  function isoDate(s) {
+    if (!s) return "";
+    var m = String(s).trim();
+    if (/^\d{8}$/.test(m)) return m.slice(0, 4) + "-" + m.slice(4, 6) + "-" + m.slice(6, 8);
+    if (/^\d{4}-\d{2}-\d{2}/.test(m)) return m.slice(0, 10);
+    return m;
+  }
   function buildCSV(inv) {
     var cur = inv.currency || "EUR";
     var rows = [];
     // Kopfdaten
     rows.push(["Rechnungsnummer", inv.id]);
-    rows.push(["Rechnungsdatum", inv.issueDate]);
-    rows.push(["Faelligkeit", inv.dueDate]);
+    rows.push(["Rechnungsdatum", isoDate(inv.issueDate)]);
+    rows.push(["Faelligkeit", isoDate(inv.dueDate)]);
     rows.push(["Waehrung", cur]);
     rows.push(["Verkaeufer", inv.seller ? inv.seller.name : ""]);
     rows.push(["USt-IdNr. Verkaeufer", inv.seller ? inv.seller.vat : ""]);
@@ -523,6 +562,76 @@
   }
   var csvBtn = $("#csvBtn");
   if (csvBtn) csvBtn.addEventListener("click", function () { if (currentInvoice) downloadCSV(currentInvoice); });
+
+  /* ---------- Batch: Sammel-Tabelle mehrerer Rechnungen ---------- */
+  function invSumStatus(inv) {
+    var te = num(inv.totals.taxExcl), tx = num(inv.totals.tax), ti = num(inv.totals.taxIncl);
+    if (te != null && tx != null && ti != null) return Math.abs((te + tx) - ti) < 0.02 ? "ok" : "bad";
+    return "warn";
+  }
+  function renderBatch(results) {
+    currentBatch = results;
+    var okCount = results.filter(function (r) { return r.inv; }).length;
+    batchCountEl.textContent = okCount + " von " + results.length + " Rechnung(en) gelesen";
+    batchBodyEl.innerHTML = results.map(function (r, i) {
+      if (r.error) {
+        return '<tr class="batch-err"><td>' + esc(r.name) + '</td>' +
+          '<td colspan="5" class="muted">⚠ ' + esc(r.error) + '</td><td></td></tr>';
+      }
+      var inv = r.inv, cur = inv.currency;
+      var st = invSumStatus(inv), ico = st === "ok" ? "✓" : st === "bad" ? "✗" : "!";
+      return '<tr>' +
+        '<td data-label="Datei">' + esc(r.name) + '</td>' +
+        '<td data-label="Nr.">' + esc(inv.id || "—") + '</td>' +
+        '<td data-label="Datum">' + fmtDate(inv.issueDate) + '</td>' +
+        '<td data-label="Verkäufer">' + esc(inv.seller && inv.seller.name ? inv.seller.name : "—") + '</td>' +
+        '<td data-label="Brutto" class="num">' + (num(inv.totals.taxIncl) != null ? fmtMoney(inv.totals.taxIncl, cur) : "—") + '</td>' +
+        '<td data-label="Prüfung" class="num st-' + st + '">' + ico + '</td>' +
+        '<td class="num"><button class="linkbtn" data-idx="' + i + '">Details</button></td>' +
+        '</tr>';
+    }).join("");
+    // Detail-Buttons
+    Array.prototype.forEach.call(batchBodyEl.querySelectorAll("button[data-idx]"), function (b) {
+      b.addEventListener("click", function () {
+        var r = currentBatch[+b.getAttribute("data-idx")];
+        if (r && r.inv) showSingle(r.inv);
+      });
+    });
+    resultEl.classList.add("hidden");
+    batchEl.classList.remove("hidden");
+    batchEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function buildBatchCSV(results) {
+    var head = ["Datei", "Rechnungsnummer", "Datum", "Faelligkeit", "Verkaeufer", "USt-IdNr.",
+      "Kaeufer", "Netto", "USt", "Brutto", "Zahlbetrag", "Waehrung", "Pruefung"];
+    var rows = [head];
+    results.forEach(function (r) {
+      if (!r.inv) { rows.push([r.name, "FEHLER: " + r.error]); return; }
+      var inv = r.inv;
+      rows.push([r.name, inv.id, isoDate(inv.issueDate), isoDate(inv.dueDate),
+        inv.seller ? inv.seller.name : "", inv.seller ? inv.seller.vat : "",
+        inv.buyer ? inv.buyer.name : "",
+        deNum(inv.totals.taxExcl || inv.totals.net), deNum(inv.totals.tax),
+        deNum(inv.totals.taxIncl), deNum(inv.totals.payable), inv.currency || "EUR",
+        invSumStatus(inv) === "ok" ? "ok" : invSumStatus(inv) === "bad" ? "Summenfehler" : "unklar"]);
+    });
+    return "﻿" + rows.map(function (r) { return r.map(csvCell).join(";"); }).join("\r\n");
+  }
+  function downloadBatchCSV() {
+    if (!currentBatch.length) return;
+    var blob = new Blob([buildBatchCSV(currentBatch)], { type: "text/csv;charset=utf-8;" });
+    var url = URL.createObjectURL(blob), a = document.createElement("a");
+    a.href = url; a.download = "rechnungen_sammel_" + new Date().toISOString().slice(0, 10) + ".csv";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+  var batchCsvBtn = $("#batchCsvBtn");
+  if (batchCsvBtn) batchCsvBtn.addEventListener("click", downloadBatchCSV);
+  var batchResetBtn = $("#batchResetBtn");
+  if (batchResetBtn) batchResetBtn.addEventListener("click", function () {
+    batchEl.classList.add("hidden"); fileInput.value = ""; window.scrollTo({ top: 0, behavior: "smooth" });
+  });
 
   $("#printBtn").addEventListener("click", function () { window.print(); });
   $("#resetBtn").addEventListener("click", function () {
