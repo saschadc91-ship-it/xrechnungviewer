@@ -11,6 +11,7 @@
       resultEl = $("#result"),
       checksEl = $("#checks"),
       invoiceEl = $("#invoice");
+  var currentInvoice = null;
 
   /* ---------- XML-Helfer (namespace-agnostisch) ---------- */
   function kids(node, name) {
@@ -401,6 +402,7 @@
       else { showError("Unbekanntes Format. Erwartet: XRechnung (UBL/CII) oder ZUGFeRD. Gefundenes Wurzelelement: <" + ln + ">"); return; }
     }
     clearError();
+    currentInvoice = inv;
     renderChecks(validate(inv));
     renderInvoice(inv);
     resultEl.classList.remove("hidden");
@@ -471,6 +473,56 @@
   dropzone.addEventListener("drop", function (e) {
     if (e.dataTransfer.files && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
   });
+
+  /* ---------- CSV-Export (Semikolon-getrennt, Excel-DE-freundlich) ---------- */
+  function csvCell(v) {
+    var s = String(v == null ? "" : v);
+    if (/[";\n]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+  // Zahl mit deutschem Dezimalkomma (kein Tausenderpunkt, damit Excel sauber importiert)
+  function deNum(v) {
+    var n = num(v);
+    return n == null ? (v == null ? "" : v) : String(n).replace(".", ",");
+  }
+  function buildCSV(inv) {
+    var cur = inv.currency || "EUR";
+    var rows = [];
+    // Kopfdaten
+    rows.push(["Rechnungsnummer", inv.id]);
+    rows.push(["Rechnungsdatum", inv.issueDate]);
+    rows.push(["Faelligkeit", inv.dueDate]);
+    rows.push(["Waehrung", cur]);
+    rows.push(["Verkaeufer", inv.seller ? inv.seller.name : ""]);
+    rows.push(["USt-IdNr. Verkaeufer", inv.seller ? inv.seller.vat : ""]);
+    rows.push(["Kaeufer", inv.buyer ? inv.buyer.name : ""]);
+    rows.push(["Leitweg-ID/Kaeuferreferenz", inv.buyerRef]);
+    rows.push(["Netto gesamt", deNum(inv.totals.taxExcl || inv.totals.net)]);
+    rows.push(["Umsatzsteuer", deNum(inv.totals.tax)]);
+    rows.push(["Bruttobetrag", deNum(inv.totals.taxIncl)]);
+    rows.push(["Zahlbetrag", deNum(inv.totals.payable)]);
+    rows.push(["IBAN", inv.iban]);
+    rows.push([]); // Leerzeile
+    // Positionen
+    rows.push(["Pos.", "Bezeichnung", "Menge", "Einheit", "Einzelpreis", "USt %", "Netto"]);
+    inv.lines.forEach(function (l, i) {
+      rows.push([l.id || (i + 1), l.name, deNum(l.qty), l.unit, deNum(l.price), deNum(l.taxpct), deNum(l.net)]);
+    });
+    return "﻿" + rows.map(function (r) { return r.map(csvCell).join(";"); }).join("\r\n");
+  }
+  function downloadCSV(inv) {
+    var csv = buildCSV(inv);
+    var blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    var safe = (inv.id || "rechnung").replace(/[^\w.-]+/g, "_");
+    a.href = url; a.download = "rechnung_" + safe + ".csv";
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+  var csvBtn = $("#csvBtn");
+  if (csvBtn) csvBtn.addEventListener("click", function () { if (currentInvoice) downloadCSV(currentInvoice); });
 
   $("#printBtn").addEventListener("click", function () { window.print(); });
   $("#resetBtn").addEventListener("click", function () {
