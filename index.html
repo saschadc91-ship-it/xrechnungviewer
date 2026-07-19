@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XRechnung anzeigen &amp; prüfen – kostenloser E-Rechnung Viewer (XML &amp; ZUGFeRD)</title>
+<meta name="description" content="XRechnung oder ZUGFeRD-XML kostenlos online anzeigen und prüfen. E-Rechnung lesbar machen ohne Software. 100 % im Browser – Ihre Rechnungsdaten werden nicht hochgeladen.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://saschadc91-ship-it.github.io/xrechnungviewer/">
+<meta property="og:title" content="XRechnung anzeigen &amp; prüfen – kostenloser E-Rechnung Viewer">
+<meta property="og:description" content="E-Rechnung (XRechnung / ZUGFeRD) kostenlos lesbar machen. 100 % im Browser, keine Anmeldung.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="de_DE">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧾</text></svg>">
+<link rel="stylesheet" href="assets/style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "XRechnung Viewer",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Web",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+  "description": "Kostenloser Online-Viewer und Prüfer für XRechnung und ZUGFeRD E-Rechnungen. Läuft vollständig im Browser."
+}
+</script>
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="logo" href="./">🧾 XRechnung&nbsp;Viewer</a>
+    <nav><a href="#faq">FAQ</a><a href="#anleitung">Anleitung</a><a href="ratgeber/xrechnung-oeffnen.html">Ratgeber</a></nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <h1>E-Rechnung anzeigen &amp; prüfen – kostenlos</h1>
+      <p class="lede">Ziehen Sie eine <strong>XRechnung</strong>- oder <strong>ZUGFeRD</strong>-Datei hierher und machen Sie sie in Sekunden lesbar. Inklusive Plausibilitätsprüfung der Pflichtfelder.</p>
+      <p class="privacy-badge">🔒 100 % in Ihrem Browser. Ihre Rechnung wird <strong>nicht hochgeladen</strong> und verlässt Ihren Computer nicht.</p>
+
+      <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Datei auswählen oder hierher ziehen">
+        <input type="file" id="fileInput" accept=".xml,.pdf" hidden>
+        <div class="dz-inner">
+          <div class="dz-icon">📥</div>
+          <p><strong>Datei hierher ziehen</strong> oder <span class="link">auswählen</span></p>
+          <p class="dz-hint">XRechnung (.xml, UBL &amp; CII) und ZUGFeRD (.pdf) werden unterstützt</p>
+        </div>
+      </div>
+      <p class="try-sample">Kein Beispiel zur Hand? <button id="loadSample" class="linkbtn" type="button">Beispiel-XRechnung laden</button></p>
+      <div id="error" class="error hidden" role="alert"></div>
+    </div>
+  </section>
+
+  <section id="result" class="result hidden">
+    <div class="wrap">
+      <div class="result-actions">
+        <button id="printBtn" class="btn" type="button">🖨️ Drucken / als PDF speichern</button>
+        <button id="resetBtn" class="btn btn-ghost" type="button">Neue Datei</button>
+      </div>
+
+      <div class="card checks-card">
+        <h2>Plausibilitätsprüfung</h2>
+        <p class="muted small">Prüft, ob die zentralen Pflichtangaben (EN&nbsp;16931) vorhanden und rechnerisch stimmig sind. Dies ersetzt keine offizielle Schematron-Validierung.</p>
+        <ul id="checks" class="checks"></ul>
+      </div>
+
+      <div class="card invoice-card">
+        <div id="invoice" class="invoice"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Conversion / CTA to klarbeleg -->
+  <section class="cta">
+    <div class="wrap cta-inner">
+      <div>
+        <h2>Sie müssen E-Rechnungen nicht nur lesen, sondern auch <em>erstellen</em>?</h2>
+        <p>Seit 2025 gilt in Deutschland die E-Rechnungspflicht im B2B. Mit <strong>klarbeleg</strong> schreiben Sie normkonforme XRechnungen, exportieren nach DATEV und behalten den Überblick – ohne Steuerdeutsch.</p>
+      </div>
+      <!-- MONETARISIERUNG: sobald klarbeleg-URL vorliegt, href unten ersetzen durch
+           https://<klarbeleg>?utm_source=xrechnung-viewer&utm_medium=cta&utm_campaign=funnel und Text auf "klarbeleg ansehen →" -->
+      <a class="btn btn-cta" id="klarbelegCta" href="ratgeber/xrechnung-oeffnen.html">Mehr zur E-Rechnung →</a>
+    </div>
+  </section>
+
+  <section id="anleitung" class="content">
+    <div class="wrap">
+      <h2>So machen Sie eine E-Rechnung lesbar</h2>
+      <ol class="steps">
+        <li><strong>Datei öffnen:</strong> Sie haben eine <code>.xml</code>-Datei (XRechnung) oder ein <code>.pdf</code> (ZUGFeRD) per E-Mail erhalten. Speichern Sie sie auf Ihrem Computer.</li>
+        <li><strong>Hochladen entfällt:</strong> Ziehen Sie die Datei oben in das Feld. Die Verarbeitung passiert direkt in Ihrem Browser.</li>
+        <li><strong>Lesen &amp; prüfen:</strong> Sie sehen die Rechnung als übersichtliche Ansicht plus eine Prüfung der Pflichtfelder. Über „Drucken“ speichern Sie sie als klassisches PDF.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="faq" class="content faq">
+    <div class="wrap">
+      <h2>Häufige Fragen zur E-Rechnung</h2>
+
+      <details>
+        <summary>Was ist der Unterschied zwischen XRechnung und ZUGFeRD?</summary>
+        <p><strong>XRechnung</strong> ist ein reines XML-Format (Datensatz). <strong>ZUGFeRD</strong> ist ein PDF, in das dieselben XML-Daten eingebettet sind – Sie sehen also ein sichtbares PDF und darin steckt der maschinenlesbare Datensatz. Beide erfüllen die europäische Norm EN&nbsp;16931.</p>
+      </details>
+
+      <details>
+        <summary>Werden meine Rechnungsdaten hochgeladen?</summary>
+        <p>Nein. Dieses Tool läuft vollständig als JavaScript in Ihrem Browser. Es gibt keinen Server, der Ihre Datei empfängt. Sie können den Netzwerk-Tab Ihres Browsers öffnen und sehen: es wird nichts gesendet.</p>
+      </details>
+
+      <details>
+        <summary>Muss ich als kleines Unternehmen E-Rechnungen empfangen können?</summary>
+        <p>Ja. Seit dem 01.01.2025 müssen in Deutschland grundsätzlich alle inländischen Unternehmen im B2B-Bereich E-Rechnungen <em>empfangen</em> können. Für das <em>Versenden</em> gelten gestaffelte Übergangsfristen (u.&nbsp;a. ab 2027 für größere Unternehmen). Dieses Tool hilft Ihnen beim Lesen empfangener Rechnungen. Ohne Gewähr – dies ist keine Rechts- oder Steuerberatung.</p>
+      </details>
+
+      <details>
+        <summary>Warum sieht meine Datei nach wirrem XML aus?</summary>
+        <p>Weil eine XRechnung ein maschinenlesbarer Datensatz ist, kein Dokument zum Ansehen. Genau dafür ist dieses Tool da: Es übersetzt den Datensatz in eine für Menschen lesbare Rechnung.</p>
+      </details>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>Kostenloses Werkzeug. Keine Rechts- oder Steuerberatung. Alle Angaben ohne Gewähr.</p>
+    <p class="muted small">Verarbeitung erfolgt lokal im Browser. Es werden keine Rechnungsdaten übertragen oder gespeichert.</p>
+  </div>
+</footer>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

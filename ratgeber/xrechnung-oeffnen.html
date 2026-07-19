@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XRechnung öffnen &amp; anzeigen – so lesen Sie eine XML-Rechnung (2026)</title>
+<meta name="description" content="XRechnung öffnen und lesbar machen: Was das XML-Format ist, womit Sie es anzeigen und wie Sie eingehende E-Rechnungen prüfen. Kostenloser Viewer, ohne Upload.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://saschadc91-ship-it.github.io/xrechnungviewer/ratgeber/xrechnung-oeffnen.html">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧾</text></svg>">
+<link rel="stylesheet" href="../assets/style.css">
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org","@type":"FAQPage",
+  "mainEntity":[
+    {"@type":"Question","name":"Womit kann ich eine XRechnung öffnen?","acceptedAnswer":{"@type":"Answer","text":"Mit einem XRechnung-Viewer, der das XML in eine lesbare Rechnung übersetzt. Ein Doppelklick öffnet nur den Code im Browser oder Editor."}},
+    {"@type":"Question","name":"Ist eine XRechnung ein PDF?","acceptedAnswer":{"@type":"Answer","text":"Nein. Eine XRechnung ist eine XML-Datei (Datensatz). ZUGFeRD dagegen ist ein PDF mit eingebettetem XML."}}
+  ]
+}
+</script>
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="logo" href="../">🧾&nbsp;XRechnung&nbsp;Viewer</a>
+    <nav><a href="../">Viewer</a><a href="../#faq">FAQ</a></nav>
+  </div>
+</header>
+
+<main>
+<article class="content wrap" style="max-width:760px">
+  <p class="muted small"><a href="../">Start</a> › Ratgeber › XRechnung öffnen</p>
+  <h1 style="font-size:2rem;margin:.2em 0 .4em">XRechnung öffnen &amp; anzeigen: So lesen Sie eine XML-Rechnung</h1>
+  <p class="lede" style="margin:0 0 20px">Sie haben per E-Mail eine <code>.xml</code>-Datei bekommen und beim Öffnen erscheint nur wirrer Code? Das ist normal – und in zwei Minuten gelöst. Hier erfahren Sie, was eine XRechnung ist und wie Sie sie lesbar machen.</p>
+
+  <div class="box tool" style="background:#e9f8ef;border-left:4px solid #0f9d58;padding:14px 18px;border-radius:0 10px 10px 0;margin:0 0 24px">
+    <strong>Schnellster Weg:</strong> Ziehen Sie Ihre Datei in unseren <a href="../">kostenlosen XRechnung-Viewer</a>. Sie sehen sofort eine lesbare Rechnung – 100&nbsp;% in Ihrem Browser, ohne Upload.
+  </div>
+
+  <h2>Warum sieht meine XRechnung aus wie Code?</h2>
+  <p>Eine XRechnung ist bewusst <strong>kein Dokument zum Ansehen</strong>, sondern ein maschinenlesbarer Datensatz nach der Norm EN&nbsp;16931. Der Vorteil: Buchhaltungssysteme können die Rechnung automatisch einlesen. Der Nachteil: Ein Mensch, der die Datei doppelklickt, sieht nur XML-Struktur mit Tags wie <code>&lt;cbc:PayableAmount&gt;</code>. Zum Lesen brauchen Sie ein Werkzeug, das diesen Datensatz in eine gewohnte Rechnungsansicht übersetzt.</p>
+
+  <h2>XRechnung vs. ZUGFeRD – welche Datei habe ich?</h2>
+  <ul>
+    <li><strong>XRechnung</strong>: Datei endet auf <code>.xml</code>. Reiner Datensatz, kein sichtbares Layout.</li>
+    <li><strong>ZUGFeRD</strong>: Datei endet auf <code>.pdf</code>. Sie sehen ein normales PDF, in dem zusätzlich der XML-Datensatz eingebettet ist.</li>
+  </ul>
+  <p>Beide erfüllen die E-Rechnungspflicht. Unser Viewer öffnet <strong>beide</strong> – XML direkt und das eingebettete XML aus ZUGFeRD-PDFs.</p>
+
+  <h2>3 Wege, eine XRechnung zu öffnen</h2>
+  <ol>
+    <li><strong>Online-Viewer (empfohlen):</strong> Datei in den <a href="../">Viewer</a> ziehen. Kein Download, keine Installation, keine Weitergabe der Daten.</li>
+    <li><strong>Buchhaltungssoftware:</strong> Viele Programme importieren XRechnungen direkt. Sinnvoll, wenn Sie ohnehin damit buchen.</li>
+    <li><strong>Text-/XML-Editor:</strong> Zeigt nur den Rohcode – zum schnellen Lesen ungeeignet.</li>
+  </ol>
+
+  <h2>Worauf Sie beim Empfang achten sollten</h2>
+  <p>Prüfen Sie, ob die zentralen Pflichtangaben vorhanden sind: Rechnungsnummer, Datum, Verkäufer- und Käuferdaten, Steuerbeträge und der Zahlbetrag. Unser Viewer markiert diese Felder automatisch und weist auf Unstimmigkeiten hin (z.&nbsp;B. wenn Netto + USt nicht den Bruttobetrag ergeben). Bewahren Sie außerdem immer die <strong>Originaldatei</strong> auf – ein Ausdruck reicht rechtlich nicht.</p>
+
+  <div class="box" style="background:#eaf3ff;border-left:4px solid #1c64f2;padding:14px 18px;border-radius:0 10px 10px 0;margin:24px 0">
+    <!-- MONETARISIERUNG: Kit- und klarbeleg-Links einsetzen, sobald URLs vorliegen. -->
+    <strong>Sie müssen bald selbst E-Rechnungen schreiben?</strong> Ein kompaktes <strong>E-Rechnung Umstiegs-Kit</strong> zeigt Schritt für Schritt, wie Sie umstellen – Fristen, Checkliste, Aufbewahrung. Wer regelmäßig Rechnungen stellt, erledigt das normkonform mit einer Rechnungssoftware wie <strong>klarbeleg</strong>.
+  </div>
+
+  <h2>Häufige Fragen</h2>
+  <h3>Womit kann ich eine XRechnung öffnen?</h3>
+  <p>Mit einem XRechnung-Viewer. Ein Doppelklick öffnet nur den Rohcode.</p>
+  <h3>Ist eine XRechnung ein PDF?</h3>
+  <p>Nein, eine XRechnung ist eine XML-Datei. Nur ZUGFeRD ist ein PDF mit eingebettetem Datensatz.</p>
+  <h3>Werden meine Daten beim Online-Viewer hochgeladen?</h3>
+  <p>Nein. Die Verarbeitung läuft komplett im Browser; die Rechnung verlässt Ihren Computer nicht.</p>
+
+  <p style="margin-top:28px"><a class="btn" href="../">→ Jetzt XRechnung öffnen</a></p>
+  <p class="small muted">Allgemeine Information, keine Steuer- oder Rechtsberatung. Stand 2026.</p>
+</article>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap"><p>Kostenloses Werkzeug. Keine Rechts- oder Steuerberatung. Alle Angaben ohne Gewähr.</p></div>
+</footer>
+</body>
+</html>
